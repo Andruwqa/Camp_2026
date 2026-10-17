@@ -414,9 +414,9 @@
   });
 
   setInterval(updateStatus, 15 * 1000);
+  // Якорь #now-… убрали — возвращаемся к настоящему времени
   window.addEventListener("hashchange", () => {
-    if (!readOverride()) return;
-    clock = readOverride();
+    clock = readOverride() || (() => Date.now());
     openAtNow();
   });
 })();
