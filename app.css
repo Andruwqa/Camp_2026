@@ -157,7 +157,8 @@ body {
 }
 .rule {
   border: 0;
-  border-top: max(1px, calc(4px * var(--u))) solid currentColor;
+  /* цвет задаём явно: у <hr> в браузере свой серый цвет, и currentColor давал серую линию */
+  border-top: max(1px, calc(4px * var(--u))) solid var(--fg);
   margin: 0;
   width: 100%;
 }

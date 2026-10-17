@@ -1,11 +1,16 @@
+<!doctype html>
+<html lang="ru">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Расписание кэмпа</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preload" href="fonts/steppe-bold.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/steppe-regular.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/kurochka-lapkoi.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="app.css">
+<!-- ?v= — метка версии: меняется при каждом обновлении, чтобы браузеры не держали старые файлы -->
+<link rel="stylesheet" href="app.css?v=2026-10-17-1">
+</head>
+<body>
 
 <header class="bar" id="bar">
   <nav class="chips" id="chips" aria-label="Дни кэмпа"></nav>
@@ -13,5 +18,7 @@
 <main id="days"></main>
 <button class="nowbtn" id="nowbtn" type="button" hidden></button>
 
-<script src="schedule.js"></script>
-<script src="app.js"></script>
+<script src="schedule.js?v=2026-10-17-1"></script>
+<script src="app.js?v=2026-10-17-1"></script>
+</body>
+</html>
