@@ -31,7 +31,7 @@
   const clockMin = (t) => { const m = toMin(t); return m < 5 * 60 ? m + 1440 : m; };
 
   // ---------- Таймлайн ----------
-  const timeline = [];       // все пункты с началом, по порядку
+  const timeline = [];       // все пункты с началом, по времени начала
   const allEntries = [];     // все пункты (и без времени)
   DAYS.forEach((d) => {
     let talkCursor = d.talksAt ? toMin(d.talksAt) : null;
@@ -57,6 +57,8 @@
       if (e.start != null) timeline.push(e);
     });
   });
+  // На странице пункт может стоять выше более раннего (йога над завтраком), а таймлайн идёт по времени
+  timeline.sort((a, b) => a.start - b.start);
   timeline.forEach((e, i) => {
     if (e.end != null) return;
     const next = timeline[i + 1];
@@ -102,7 +104,9 @@
     let side = "";
     if (!it.center) {
       side = '<div class="ev-side">';
-      if (it.t) side += `<p class="ev-time">${esc(it.t)}</p>`;
+      // в промежутке «с 9 до 11» пробелы без моноширинных цифр, иначе они вдвое шире, чем в макете
+      if (it.tl) side += `<p class="ev-time">${esc(it.tl).replace(/ /g, '<span class="sp"> </span>')}</p>`;
+      else if (it.t) side += `<p class="ev-time">${esc(it.t)}</p>`;
       // доклад с точным временем: время и плашка длительности; без времени — только длительность
       if (it.talk && it.at) side += `<p class="ev-time">${esc(it.at)}</p><span class="pill">${esc(it.dur)}</span>`;
       else if (it.talk) side += `<p class="ev-time dur">${esc(it.dur)}</p>`;
@@ -230,7 +234,7 @@
       if (e.start != null) {
         isNow = e.start <= now && now < e.end;
         if (isNow) current = e;
-        if (!next && e.start > now) next = e;
+        if (e.start > now && (!next || e.start < next.start)) next = e;
       }
       e.el.classList.toggle("is-now", isNow);
       e.rows.forEach((r) => r.el.classList.toggle("is-past", r.end <= now));
@@ -266,31 +270,42 @@
   nowLine.innerHTML = '<span class="nowline-dot" aria-hidden="true"></span><span class="nowline-rule" aria-hidden="true"></span><span class="nowline-label"></span>';
   const nowLabel = nowLine.querySelector(".nowline-label");
 
+  // Порядок на странице не всегда совпадает со временем (йога выше завтрака, который начался раньше),
+  // поэтому линия встаёт под самым нижним из начавшихся пунктов, а утром — над самым верхним из предстоящих.
+  const isBelow = (a, b) => !!(b.el.compareDocumentPosition(a.el) & Node.DOCUMENT_POSITION_FOLLOWING);
+
   function placeNowLine(now, next) {
-    let last = null;
-    for (const e of timeline) { if (e.start <= now) last = e; else break; }
-    const nearLast = last && now - last.end < NEAR;
+    const started = timeline.filter((e) => e.start <= now);
+    const last = started.reduce((low, e) => (low && !isBelow(e, low) ? low : e), null);
+    const lastEnd = started.length ? Math.max(...started.map((e) => e.end)) : null;
+    const nearLast = last && now - lastEnd < NEAR;
     const nearNext = next && next.start - now < NEAR;
     if (!nearLast && !nearNext) { nowLine.remove(); return; }
 
-    const running = last && now < last.end;
+    const running = last && now < lastEnd;
     if (running || (last && (!next || next.day === last.day))) last.el.after(nowLine);
-    else next.el.before(nowLine);   // утро нового дня или начало кэмпа: линия над первым пунктом
+    else {   // утро нового дня или начало кэмпа: линия над первым пунктом
+      const first = timeline.filter((e) => e.day === next.day && e.start > now)
+        .reduce((top, e) => (top && isBelow(e, top) ? top : e), null);
+      first.el.before(nowLine);
+    }
 
     nowLabel.textContent = "сейчас " + hhmm(now);
     nowLine.setAttribute("aria-label", "Сейчас " + hhmm(now));
   }
 
   // Серым — всё, что выше линии «сейчас»: пункты, разделители, плашки про лекции.
-  // Идущий пункт остаётся ярким. Заголовок дня сереет, когда день закончился.
+  // Идущий пункт остаётся ярким, ещё не начавшийся тоже (йога над идущим завтраком).
+  // Заголовок дня сереет, когда день закончился.
   function markPast(now) {
     const all = [...daysEl.querySelectorAll(".sched > *")];
+    const ahead = new Set(timeline.filter((e) => e.start > now).map((e) => e.el));
     let edge;
     if (nowLine.isConnected) edge = all.indexOf(nowLine);
     else edge = timeline.length && now < timeline[0].start ? 0 : all.length;
     all.forEach((el, i) => {
       if (el === nowLine) return;
-      el.classList.toggle("is-past", i < edge && !el.classList.contains("is-now"));
+      el.classList.toggle("is-past", i < edge && !el.classList.contains("is-now") && !ahead.has(el));
     });
     DAYS.forEach((d) => d.el.querySelector(".day-title").classList.toggle("is-past", d.end <= now));
   }

@@ -245,6 +245,7 @@ body {
   white-space: nowrap;
   min-width: calc(200px * var(--u));
 }
+.ev-time .sp { font-variant-numeric: lining-nums; }
 .ev-emoji {
   position: absolute;
   left: calc(-104px * var(--u));
