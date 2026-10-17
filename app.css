@@ -276,19 +276,9 @@ body {
 .ev.center { grid-template-columns: 1fr; text-align: center; }
 .ev.center .ev-title { font-weight: 400; }
 
-/* Доклады внутри лекционного блока */
-.ev.talk { column-gap: calc(32px * var(--u)); }
-.ev.talk .ev-info { gap: calc(6px * var(--u)); }
-.ev.talk .ev-title { font-size: calc(60px * var(--u)); }
-.ev.talk .ev-sub { font-size: calc(48px * var(--u)); }
-.ev.talk .ev-time { font-size: calc(60px * var(--u)); min-width: 0; }
+/* Доклады выглядят как обычные пункты. Если у доклада нет точного времени,
+   справа стоит только длительность обычным начертанием */
 .ev.talk .ev-time.dur { font-weight: 400; font-variant-numeric: lining-nums; }
-.ev.talk .ev-side { gap: calc(12px * var(--u)); }
-.ev.talk .pill {
-  font-size: calc(40px * var(--u));
-  --pv: max(3px, calc(13px * var(--u)));
-  --ph: max(3px, calc(10px * var(--u)));
-}
 
 .banner {
   margin: 0;
