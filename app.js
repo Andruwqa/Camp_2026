@@ -9,18 +9,24 @@
   const MIN = 60 * 1000;
 
   // ---------- Время ----------
-  // Для проверки можно открыть страницу с якорем #now-2026-10-19_13.30
+  // Всё считаем по Тбилиси (UTC+4, без перехода на летнее время), в каком бы поясе ни был телефон.
+  const TZ = 4 * 60 * MIN;
+  const DAY = 24 * 60 * MIN;
+  const tbilisi = (y, mo, d, h = 0, mi = 0) => Date.UTC(y, mo - 1, d, h, mi) - TZ;
+  const tbDay = (ts) => Math.floor((ts + TZ) / DAY);   // номер календарного дня по Тбилиси
+
+  // Для проверки можно открыть страницу с якорем #now-2026-10-19_13.30 (время тбилисское)
   function readOverride() {
     const m = /^#now-(\d{4})-(\d{2})-(\d{2})_(\d{1,2})\.(\d{2})$/.exec(location.hash);
     if (!m) return null;
-    const fake = new Date(+m[1], +m[2] - 1, +m[3], +m[4], +m[5]).getTime();
+    const fake = tbilisi(+m[1], +m[2], +m[3], +m[4], +m[5]);
     const startedAt = Date.now();
     return () => fake + (Date.now() - startedAt);
   }
   let clock = readOverride() || (() => Date.now());
 
   const toMin = (t) => { const [h, m] = t.split(":").map(Number); return h * 60 + m; };
-  const dayStart = (d) => new Date(d.date[0], d.date[1] - 1, d.date[2]).getTime();
+  const dayStart = (d) => tbilisi(d.date[0], d.date[1], d.date[2]);
   const at = (d, mins) => dayStart(d) + mins * MIN;
   const clockMin = (t) => { const m = toMin(t); return m < 5 * 60 ? m + 1440 : m; };
 
@@ -178,16 +184,12 @@
       const h = Math.floor(mins / 60), m = mins % 60;
       return `через ${h} ч` + (m ? ` ${m} мин` : "");
     }
-    const now = new Date(clock());
-    const a = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-    const s = new Date(startTs);
-    const b = new Date(s.getFullYear(), s.getMonth(), s.getDate()).getTime();
-    const days = Math.round((b - a) / (24 * 60 * MIN));
+    const days = tbDay(startTs) - tbDay(clock());
     if (days <= 0) return `через ${Math.floor(mins / 60)} ч`;
     if (days === 1) return "завтра";
     return `через ${days} ${plural(days, "день", "дня", "дней")}`;
   }
-  const hhmm = (ts) => { const d = new Date(ts); return `${d.getHours()}:${String(d.getMinutes()).padStart(2, "0")}`; };
+  const hhmm = (ts) => { const d = new Date(ts + TZ); return `${d.getUTCHours()}:${String(d.getUTCMinutes()).padStart(2, "0")}`; };
 
   function updateStatus() {
     const now = clock();
@@ -215,9 +217,8 @@
     placeNowLine(now, next);
     markPast(now);
 
-    const todayStr = new Date(now).toDateString();
     DAYS.forEach((d) => {
-      d.chip.classList.toggle("today", new Date(dayStart(d)).toDateString() === todayStr);
+      d.chip.classList.toggle("today", tbDay(dayStart(d)) === tbDay(now));
       d.chip.classList.toggle("is-over", d.end <= now);
     });
     overEl.hidden = !!target;
