@@ -74,6 +74,7 @@
   const chipsEl = document.getElementById("chips");
   const bar = document.getElementById("bar");
   const nowBtn = document.getElementById("nowbtn");
+  const liveInput = document.getElementById("live");
 
   function renderItem(it) {
     if (it === LINE) return '<hr class="rule">';
@@ -171,6 +172,35 @@
   // ---------- Состояние «сейчас» ----------
   let target = null;          // { e, kind: "now" | "next" }
 
+  // Тогл «Текущее время». Выключен — расписание выглядит как обычная программа:
+  // без линии «сейчас», серого прошедшего, плашек «через …» и кнопки «Сейчас».
+  // Выбор запоминаем в браузере.
+  const LIVE_KEY = "camp-live";
+  let live = true;
+  try { live = localStorage.getItem(LIVE_KEY) !== "off"; } catch (_) {}
+  liveInput.checked = live;
+  liveInput.addEventListener("change", () => {
+    live = liveInput.checked;
+    try { localStorage.setItem(LIVE_KEY, live ? "on" : "off"); } catch (_) {}
+    updateStatus();
+    if (live) scrollToNow(true);
+  });
+
+  function clearStatus() {
+    target = null;
+    allEntries.forEach((e) => {
+      e.el.classList.remove("is-now");
+      e.rows.forEach((r) => r.el.classList.remove("is-past"));
+      const old = e.el.querySelector(".pill.status");
+      if (old) old.remove();
+    });
+    nowLine.remove();
+    daysEl.querySelectorAll(".is-past").forEach((el) => el.classList.remove("is-past"));
+    DAYS.forEach((d) => d.chip.classList.remove("today", "is-over"));
+    overEl.hidden = true;
+    nowBtn.hidden = true;
+  }
+
   function plural(n, one, few, many) {
     const a = n % 10, b = n % 100;
     if (a === 1 && b !== 11) return one;
@@ -192,6 +222,7 @@
   const hhmm = (ts) => { const d = new Date(ts + TZ); return `${d.getUTCHours()}:${String(d.getUTCMinutes()).padStart(2, "0")}`; };
 
   function updateStatus() {
+    if (!live) { clearStatus(); return; }
     const now = clock();
     let current = null, next = null;
     allEntries.forEach((e) => {
@@ -314,7 +345,7 @@
   }
 
   function updateNowButton() {
-    if (!target) { nowBtn.hidden = true; return; }
+    if (!live || !target) { nowBtn.hidden = true; return; }
     const r = (nowLine.isConnected ? nowLine : target.e.el).getBoundingClientRect();
     const below = r.top > window.innerHeight - 70;
     nowBtn.hidden = !(below || r.bottom < headerH());
@@ -384,11 +415,11 @@
   // ---------- Старт ----------
   if ("scrollRestoration" in history) history.scrollRestoration = "manual";
   document.documentElement.style.setProperty("--page", `var(${DAYS[DAYS.length - 1].bg})`);
-  // При каждом открытии страница встаёт на текущее время
+  // При каждом открытии страница встаёт на текущее время (если тогл «Текущее время» включён)
   function openAtNow() {
     updateStatus();
     fitTitles();
-    scrollToNow(false);
+    if (live) scrollToNow(false);
     onScroll();
   }
   openAtNow();
