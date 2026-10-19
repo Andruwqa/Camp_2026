@@ -178,17 +178,20 @@
 
   // Тогл «Следить». Выключен — расписание выглядит как обычная программа:
   // без линии «сейчас», серого прошедшего, плашек «через …» и кнопки «Сейчас».
-  // Выбор запоминаем в браузере.
+  // Выбор запоминаем в браузере. Если тогла нет на странице (закомментирован в index.html),
+  // всегда следим — иначе тот, кто раньше выключил, остался бы без линии «сейчас» и без способа включить.
   const LIVE_KEY = "camp-live";
   let live = true;
-  try { live = localStorage.getItem(LIVE_KEY) !== "off"; } catch (_) {}
-  liveInput.checked = live;
-  liveInput.addEventListener("change", () => {
-    live = liveInput.checked;
-    try { localStorage.setItem(LIVE_KEY, live ? "on" : "off"); } catch (_) {}
-    updateStatus();
-    if (live) scrollToNow(true);
-  });
+  if (liveInput) {
+    try { live = localStorage.getItem(LIVE_KEY) !== "off"; } catch (_) {}
+    liveInput.checked = live;
+    liveInput.addEventListener("change", () => {
+      live = liveInput.checked;
+      try { localStorage.setItem(LIVE_KEY, live ? "on" : "off"); } catch (_) {}
+      updateStatus();
+      if (live) scrollToNow(true);
+    });
+  }
 
   function clearStatus() {
     target = null;
