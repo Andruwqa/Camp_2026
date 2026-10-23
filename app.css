@@ -1,23 +1,36 @@
+/* Шрифты свободные (SIL Open Font License, тексты лицензий — в fonts/*-OFL.txt), с Google Fonts.
+   Manrope — основной текст, Caveat — рукописные заголовки дней. Оба вариативные: один файл на все начертания. */
 @font-face {
-  font-family: "Steppe Web";
-  src: url("fonts/steppe-regular.woff2") format("woff2");
-  font-weight: 400;
+  font-family: "Manrope";
+  src: url("fonts/manrope-cyrillic.woff2") format("woff2");
+  font-weight: 400 700;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
 }
 @font-face {
-  font-family: "Steppe Web";
-  src: url("fonts/steppe-bold.woff2") format("woff2");
-  font-weight: 700;
+  font-family: "Manrope";
+  src: url("fonts/manrope-latin.woff2") format("woff2");
+  font-weight: 400 700;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 @font-face {
-  font-family: "Kurochka Web";
-  src: url("fonts/kurochka-lapkoi.woff2") format("woff2");
-  font-weight: 400;
+  font-family: "Caveat";
+  src: url("fonts/caveat-cyrillic.woff2") format("woff2");
+  font-weight: 400 700;
   font-style: normal;
   font-display: swap;
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+@font-face {
+  font-family: "Caveat";
+  src: url("fonts/caveat-latin.woff2") format("woff2");
+  font-weight: 400 700;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
 /* Макет: дни идут сплошной лентой, у каждого свой цвет фона из Figma.
@@ -37,8 +50,8 @@
   --pill-on-dark: rgba(255, 255, 255, .4);
   --pill-ink-on-dark: rgba(255, 255, 255, .96);
 
-  --f-display: "Kurochka Web", "Comic Sans MS", cursive;
-  --f-text: "Steppe Web", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-display: "Caveat", "Comic Sans MS", cursive;
+  --f-text: "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
 
   --u: 0.25;
   --page: var(--sun);
@@ -193,7 +206,7 @@ body {
 }
 .day-title {
   margin: 0;
-  font: 400 calc(356px * var(--u))/1 var(--f-display);
+  font: 600 calc(356px * var(--u))/1 var(--f-display);
   text-align: center;
   white-space: nowrap;
   padding-top: calc(40px * var(--u));
@@ -260,7 +273,7 @@ body {
   font: 400 calc(52px * var(--u))/1 var(--f-text);
   --pv: max(3px, calc(16px * var(--u)));
   --ph: max(4px, calc(12px * var(--u)));
-  /* У Steppe над заглавными есть пустое место, поэтому без обрезки текст сидит выше центра:
+  /* Над заглавными у шрифта есть пустое место, поэтому без обрезки текст сидит выше центра:
      опускаем его на 0,1 кегля */
   padding: calc(var(--pv) + .1em) var(--ph) calc(var(--pv) - .1em);
   border-radius: max(2px, calc(8px * var(--u)));
